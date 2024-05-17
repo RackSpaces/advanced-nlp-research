@@ -23,4 +23,34 @@ def create_graph(data, labels=False):
     return G
 
 def plot_graph(graph, background_color='white', 
-   
+               font_color='grey', with_edge_label=True,
+               central_gravity=2.0, solver='',
+               height='750px', width='100%', filter_=['']):
+    ''' Creates a pyvis interactive Network Graph from a 
+        NetworkX graph object.
+    '''
+    G = Network(notebook=True, height=height, width=width, 
+                bgcolor=background_color, font_color=font_color)
+    
+    color = {0:'#fb217f', 1:'#fb217f', 2:'#88b1fb', 3:'#88b1fb', 4:'#88b1fb'}
+    deg = dict(graph.in_degree())
+    
+    for node in graph:
+        md = max(deg.values())
+        color_id = min(deg[node], 4)
+        G.add_node(node, title=node, label=node,
+                   size=(md - deg[node] + 1) * 4,
+                   color=color[color_id])
+        
+    for edge in graph.edges():
+        if with_edge_label:
+            label = graph.get_edge_data(edge[0], edge[1])['relation']
+        else:
+            label=''
+        G.add_edge(edge[0], edge[1], label=label)
+    if solver == 'barnes_hut':
+        G.barnes_hut(central_gravity=central_gravity)
+    else:
+        G.force_atlas_2based(central_gravity=central_gravity)
+    G.show_buttons(filter_=filter_)
+    return G
