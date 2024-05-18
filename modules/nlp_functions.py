@@ -57,4 +57,54 @@ def clean_up_text(t, numbers=False, punctuation=False):
     t = re.sub(r"\'ll", " will ", t)
     t = re.sub(r'\s+', ' ', t)
     t = re.sub(r"\\", "", t)
-    t = re.sub(r"\'", "", t) 
+    t = re.sub(r"\'", "", t)    
+    t = re.sub(r"\"", "", t)
+    if numbers:
+        t = re.sub('[^a-zA-Z ?!]+', '', t)
+    if punctuation:
+        t = re.sub(r'\W+', ' ', t)
+    t = remove_non_ascii(t)
+    t = t.strip()
+    return t
+
+def nltk_lemma(word):
+    ''' If one exists, returns the lemma of a word.
+        I.e. the base or dictionary version of it.
+    '''
+    lemma = wn.morphy(word)
+    if lemma is None:
+        return word
+    else:
+        return lemma
+    
+def tokenize(text, min_char=3, lemma=True, stop=True,
+             numbers=False):
+    ''' Tokenizes a text and implements some
+        transformations.
+    '''
+    tokens = nltk.word_tokenize(text)
+    tokens = [t for t in tokens if len(t) >= min_char]
+    if numbers:
+        tokens = [t for t in tokens if t[0].lower()
+                  in string.ascii_lowercase]
+    if stop:
+        tokens = [t for t in tokens if t not in stop_words]
+    if lemma:
+        tokens = [nltk_lemma(t) for t in tokens]
+    return tokens
+
+def generate_word_cloud(text, no, name=None):
+    ''' Generates a word cloud bitmap given a
+        text document (string).
+        It uses the Term Frequency (TF) and
+        Inverse Document Frequency (IDF) 
+        vectorization approach to derive the
+        importance of a word -- represented
+        by the size of the word in the word cloud.
+        
+    Parameters
+    ==========
+    text: str
+        text as the basis
+    no: int
+        
