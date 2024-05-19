@@ -107,4 +107,25 @@ def generate_word_cloud(text, no, name=None):
     text: str
         text as the basis
     no: int
-        
+        number of words to be included
+    '''
+    tokens = tokenize(text)
+    vec = TfidfVectorizer(min_df=2,
+                      analyzer='word',
+                      ngram_range=(1, 2),
+                      stop_words='english'
+                     )
+    vec.fit_transform(tokens)
+    wc = pd.DataFrame({'words': vec.get_feature_names(),
+                       'tfidf': vec.idf_})
+    words = ' '.join(wc.sort_values('tfidf', ascending=True)['words'].head(no))
+    wordcloud = WordCloud(max_font_size=110,
+                      background_color='white',
+                      width=1024, height=768,
+                      margin=10, max_words=150).generate(words)
+    plt.figure(figsize=(10, 10))
+    plt.imshow(wordcloud, interpolation='bilinear')
+    plt.axis('off')
+    plt.show()
+    if name is not None:
+        plt.imsave(name, wordcloud)
