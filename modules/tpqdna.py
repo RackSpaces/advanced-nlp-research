@@ -79,4 +79,45 @@ def create_snapshot(query, headers):
     response = response.json()
     print(response)
     snapshot_create_job_url = response['links']['self']
-    # job
+    # job_status = response['data']['attributes']['current_state']
+    return snapshot_create_job_url
+
+
+def run_snapshot(snapshot_url, headers):
+    ''' Runs the specified DNA snapshot process.
+    '''
+    old_status = ''
+    job_status = ''
+    response = ''
+    while job_status != 'JOB_STATE_DONE':
+        if job_status != old_status:
+            print('Job status changed:')
+            print(job_status)
+            if job_status == 'JOB_STATE_FAILED':
+                print('Job failed')
+                print(response)
+                break
+            old_status = job_status
+
+        time.sleep(60)
+        response = requests.request('GET', snapshot_url, headers=headers)
+        response = response.json()
+        job_status = response['data']['attributes']['current_state']
+
+    snapshot_files_list = list(response['data']['attributes']['files'])
+    return snapshot_files_list
+
+
+def download_snapshots(snapshot_files, path, headers, verbose=True):
+    ''' Downloads DNA snapshot data file-by-file given the files list.
+    '''
+    for download_file in snapshot_files:
+        url = download_file['uri']
+        if url[-5:] != '.avro':
+            continue
+        filename = url.split('/')[-1]
+        if verbose:
+            print('Downloading file {} \r'.format(filename), end='')
+        download = requests.get(url, headers=headers,
+                                allow_redirects=True, stream=True)
+        filename = o
