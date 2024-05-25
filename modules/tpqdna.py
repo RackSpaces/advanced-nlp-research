@@ -120,4 +120,32 @@ def download_snapshots(snapshot_files, path, headers, verbose=True):
             print('Downloading file {} \r'.format(filename), end='')
         download = requests.get(url, headers=headers,
                                 allow_redirects=True, stream=True)
-        filename = o
+        filename = os.path.join(path, filename)
+        with open(filename, 'wb') as fd:
+            for chunk in download.iter_content(chunk_size=128):
+                fd.write(chunk)
+
+
+def avro2dataframe(path, verbose=False):
+    ''' Transforms DNA snapshot data in a pandas DataFrame object.
+    '''
+    read_schema = avro.schema.Parse(json.dumps(djdna_avro_schema))
+    file_content = list()
+    files = sorted(os.listdir(path))
+    for avro_file in files:
+        if (os.path.isfile(os.path.join(path, avro_file)) and
+                avro_file.split('.')[-1] == 'avro'):
+            if verbose:
+                print('Reading file {} \r'.format(avro_file), end='')
+            file_path = os.path.join(path, avro_file)
+            reader = DataFileReader(
+                open(file_path, 'rb'), DatumReader(read_schema))
+            # new_schema = reader.GetMeta('avro.schema')
+            users = []
+            for user in reader:
+                users.append(user)
+            file_content.append(users)
+            reader.close()
+    data = [pd.DataFrame(content) for content in file_content]
+    data = pd.concat(data, ignore_index=True)
+    return data
