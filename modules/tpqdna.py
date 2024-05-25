@@ -50,4 +50,33 @@ djdna_avro_schema = {
         {"name": "dateline", "type": ["string", "null"]},
         {"name": "source_code", "type": ["string", "null"]},
         {"name": "modification_date", "type": ["long", "null"]},
-        {"name": "section", "type": ["string", "
+        {"name": "section", "type": ["string", "null"]},
+        {"name": "company_codes", "type": ["string", "null"]},
+        {"name": "publisher_name", "type": ["string", "null"]},
+        {"name": "region_of_origin", "type": ["string", "null"]},
+        {"name": "word_count", "type": ["int", "null"]},
+        {"name": "subject_codes", "type": ["string", "null"]},
+        {"name": "region_codes", "type": ["string", "null"]},
+        {"name": "industry_codes", "type": ["string", "null"]},
+        {"name": "person_codes", "type": ["string", "null"]},
+        {"name": "currency_codes", "type": ["string", "null"]},
+        {"name": "market_index_codes", "type": ["string", "null"]},
+        {"name": "company_codes_about", "type": ["string", "null"]},
+        {"name": "company_codes_association", "type": ["string", "null"]},
+        {"name": "company_codes_lineage", "type": ["string", "null"]},
+        {"name": "company_codes_occur", "type": ["string", "null"]},
+        {"name": "company_codes_relevance", "type": ["string", "null"]},
+        {"name": "source_name", "type": ["string", "null"]}
+    ]
+}
+
+
+def create_snapshot(query, headers):
+    ''' Specifies a DNA snapshot.
+    '''
+    response = requests.request(
+        'POST', snapshot_create_url, data=query, headers=headers)
+    response = response.json()
+    print(response)
+    snapshot_create_job_url = response['links']['self']
+    # job
